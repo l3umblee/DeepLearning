@@ -1,5 +1,5 @@
 import sys, os
-sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
+sys.path.append(os.pardir) 
 import numpy as np
 import pickle
 import DeepLearningLB as DL
@@ -37,7 +37,7 @@ network = init_network()
 accuracy_cnt = 0
 for i in range(len(x)):
     y = predict(network, x[i])
-    p= np.argmax(y) # 확률이 가장 높은 원소의 인덱스를 얻는다.
+    p= np.argmax(y)
     if p == t[i]:
         accuracy_cnt += 1
 
