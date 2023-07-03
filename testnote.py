@@ -1,5 +1,4 @@
 import DeepLearningLB as DL
+import numpy as np
 
-x1 = 0
-x2 = 0
-print(DL.XOR(x1, x2))
+print('Hi')

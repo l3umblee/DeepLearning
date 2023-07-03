@@ -65,3 +65,33 @@ def softmax(a):
     y = exp_a / sum_exp_a
 
     return y
+
+#평균 제곱 오차 (손실함수) -> t에 해당하는 값은 one-hot-encoding된 데이터
+def mean_squared_error(y, t):
+    return 0.5*np.sum((y-t)**2)
+
+#교차 엔트로피 오차 (손실함수)
+'''
+(해석)
+t는 정답 (타깃).
+log x의 그래프는 x가 1일 때 0이 되고, x가 0에 가까워질수록 y의 값이 점점 작아짐 (음수)
+여기에 -를 취했으니, 결과적으로는 정답에 가까울수록 값이 작아짐.
+
+-> 여러 개의 데이터는 tk*logyk를 모두 더한 것의 평균을 구하는 방식을 적용 (평균 손실 함수)
+
+-> y가 1차원이 아니라는 것은 데이터 N개에 대해서 판별하겠다는 뜻
+
+-> 원-핫-인코딩이 아니라 정답 라벨이 0과 1뿐이 아닌 여러 개의 경우, 
+y([np.arange(batch_size), t]를 통해서 몇 번째 데이터에 몇 번째 인덱스의 확률이 정답인지 2차원 배열로 짝지어주는 것)
+
+-> 정답이 아님을 뜻하는 0은 어차피 더할 때 0이므로 생략하겠다는 뜻
+
+-> 결국 t의 라벨링을 통해 y의 데이터에서 정답 데이터만을 찾고 그 데이터의 로그값을 이용하겠다는 의미
+'''
+def cross_entropy_error(y, t):
+    if y.ndim == 1:
+        t = t.reshape(1, t.size)
+        y = y.reshape(1, y.size)
+
+    batch_size = y.shape[0]
+    return -np.sum(np.log(y[np.arange(batch_size), t])) / batch_size
