@@ -5,21 +5,22 @@ import pickle
 import DeepLearningLB as DL
 from dataset.mnist import load_mnist
 
+'''
+[배치 (batch)]
+이미지를 여러 장 묶어서 predict() 함수에 넘길 경우를 생각해보는 것
+각 픽셀들에 가중치가 곱해자고 편향이 더해지는 것이므로 상관이 없다.
+
+다만 이처럼 여러 개의 데이터를 하나로 묶은 입력 데이터를 '배치'라고 함.
+'''
+
 def get_data():
     (x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, flatten=True, one_hot_label=False)
     return x_test, t_test
 
-'''
--유의-
-pickle 파일인 'sample_weight.pkl'에는 학습된 가중치 매개변수와 편향이 저장되어 있음
-keras 모델을 만들 때 필요한 것이 아니라 신경망 사이의 계산에서 필요한, 더 low level을 생각했을 때 필요한 것
---> 궁금한 점 : keras 모델에서는 이러한 매개변수들이 없이 어떻게 작동하는 것일까?
-'''
 def init_network():
     with open("sample_weight.pkl", 'rb') as f:
         network = pickle.load(f)
     return network
-
 
 def predict(network, x): 
     W1, W2, W3 = network['W1'], network['W2'], network['W3']
@@ -34,14 +35,16 @@ def predict(network, x):
 
     return y
 
-
 x, t = get_data()
 network = init_network()
-accuracy_cnt = 0
-for i in range(len(x)):
-    y = predict(network, x[i])
-    p= np.argmax(y) #y는 출력 데이터로, 10개의 값을 가지고 있는데, 각각의 값들은 확률을 의미. 0일 확률, 1일 확률 등 그 중에서 가장 확률이 큰 인덱스를 추출
-    if p == t[i]:
-        accuracy_cnt += 1
 
-print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
+batch_size = 100
+accuracy_cnt = 0
+
+for i in range(0, len(x), batch_size):
+    x_batch = x[i:i+batch_size]
+    y_batch = predict(network, x_batch)
+    p = np.argmax(y_batch) #y_batch에는 각 이미지에 대한 확률이 들어 있음, 하지만 2차원 배열로 batch_size 만큼 겹쳐져 있음
+    accuracy_cnt += np.sum(p == t[i:i+batch_size])
+
+print("Accuracy:" + str(float(accuracy_cnt)/len(x)))
