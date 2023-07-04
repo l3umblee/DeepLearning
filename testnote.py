@@ -1,42 +1,30 @@
-import sys, os
-sys.path.append(os.pardir)
 import numpy as np
-import DeepLearningLB as DL
+from dataset.mnist import load_mnist
+from TwoLayerNet import TwoLayerNet
 
-'''
-simpleNet (단순한 신경망)
+(x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, one_hot_label=True)
 
-멤버 변수
-self.W -> 가중치 매개변수
+network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
 
-메서드
-preidct(self, x) : 가중치 매개변수와 입력 데이터를 내적 -> 단순한 1층 신경망
-loss(self, x, t) : z는 내적의 결과값, y는 z를 softmax에 통과시킨 예측값 -> loss는 y와 t를 교차 엔트로피 오차 구한 것
+iters_num = 10000
+train_size = x_train.shape[0]
+batch_size = 100
+learning_rate = 0.1
 
-'''
-class simpleNet:
-    def __init__(self):
-        self.W = np.array([[0.47355232, 0.9977393, 0.84668094], 
-                           [0.8555741, 0.03563661, 0.69422093]]) #->가우시안 표준 정규 분포에서 난수 matrix array 생성
-    
-    def predict(self, x):
-        return np.dot(x, self.W)
-    
-    def loss(self, x, t):
-        z = self.predict(x)
-        y = DL.softmax(z)
-        loss = DL.cross_entropy_error(y, t)
+train_loss_list = []
+train_acc_list = []
+test_acc_list = []
 
-        return loss
+iter_per_epoch = max(train_size / batch_size, 1)
 
-net = simpleNet()
-print(net.W)
+for i in range(iters_num):
+    pass
+    #미니배치 획득
 
-x = np.array([0.6, 0.9])
-p = net.predict(x)
-print(p)
-print(np.argmax(p))
+    #기울기 계산
 
-t = np.array([0, 0, 1])
-l = net.loss(x, t)
-print(l)
+    #매개변수 갱신
+
+    #학습 경과 기록
+
+    #1에폭당 정확도 계산

@@ -1,9 +1,5 @@
 import sys, os
-<<<<<<< HEAD
 sys.path.append(os.pardir)
-=======
-sys.path.append(os.pardir) 
->>>>>>> 42486cdb5429abfa0311bda6a9b35831ebb7f50b
 import numpy as np
 import pickle
 import DeepLearningLB as DL
@@ -44,11 +40,8 @@ network = init_network()
 accuracy_cnt = 0
 for i in range(len(x)):
     y = predict(network, x[i])
-<<<<<<< HEAD
-    p= np.argmax(y) #y는 출력 데이터로, 10개의 값을 가지고 있는데, 각각의 값들은 확률을 의미. 0일 확률, 1일 확률 등 그 중에서 가장 확률이 큰 인덱스를 추출
-=======
+
     p= np.argmax(y)
->>>>>>> 42486cdb5429abfa0311bda6a9b35831ebb7f50b
     if p == t[i]:
         accuracy_cnt += 1
 
