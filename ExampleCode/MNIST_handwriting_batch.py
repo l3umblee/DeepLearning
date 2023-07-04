@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.pardir)
 import numpy as np
 import pickle
-import DeepLearningLB as DL
+from DLB.DeepLearningLB import sigmoid, softmax
 from dataset.mnist import load_mnist
 
 '''
@@ -27,11 +27,11 @@ def predict(network, x):
     b1, b2, b3 = network['b1'], network['b2'], network['b3']
 
     a1 = np.dot(x, W1) + b1
-    z1 = DL.sigmoid(a1)
+    z1 = sigmoid(a1)
     a2 = np.dot(z1, W2) + b2
-    z2 = DL.sigmoid(a2)
+    z2 = sigmoid(a2)
     a3 = np.dot(z2, W3) + b3
-    y = DL.softmax(a3)
+    y = softmax(a3)
 
     return y
 
