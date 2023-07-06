@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.pardir)
 import numpy as np
-from DLB.DeepLearningLB import softmax, cross_entropy_error, numerical_gradient
+from DLB.DeepLearningLB import softmax, cross_entropy_error, _numerical_gradient
 
 '''
 simpleNet (단순한 신경망)
@@ -47,5 +47,5 @@ print(net.loss(x, t))
 
 f = lambda w: net.loss(x, t)
 
-dW = numerical_gradient(f, net.W)
+dW = _numerical_gradient(f, net.W)
 print(dW)

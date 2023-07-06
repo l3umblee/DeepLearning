@@ -145,8 +145,8 @@ def numerical_gradient_2d(f, x):
             grad[idx] = numerical_gradient_1d(f, xn)
     
         return grad
-    
-def numerical_gradient(f, x):
+#기울기 계산 -> f는 손실함수, x는 가중치 매개변수
+def _numerical_gradient(f, x):
     h = 1e-4
     grad = np.zeros_like(x)
 
@@ -172,6 +172,6 @@ def gradient_descent(f, init_x, lr=0.01, step_num=100):
     x = init_x
 
     for i in range(step_num):
-        grad = numerical_gradient(f, x)
+        grad = _numerical_gradient(f, x)
         x -= lr * grad
     return x
