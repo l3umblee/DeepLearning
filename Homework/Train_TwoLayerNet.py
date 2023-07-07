@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import progressbar
 from dataset.mnist import load_mnist
 from TwoLayerNet_HW import TwoLayerNet
 
@@ -10,7 +11,7 @@ network = TwoLayerNet(input_size=784, hidden_size=50, output_size=10)
 #시간이 너무 오래 걸리므로 원래는 10000번이지만, 줄였음
 #-> DeepLearningLB에 구현된 _numerical_gradient가 while문으로 수치미분을 진행하므로 오래 걸림
 
-iters_num = 10
+iters_num = 100
 train_size = x_train.shape[0]
 batch_size = 100
 learning_rate = 0.1
@@ -23,9 +24,10 @@ progress_ = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 iter_per_epoch = max(train_size / batch_size, 1)
 
+bar = progressbar.ProgressBar(maxval=iters_num).start()
+
 for i in range(iters_num):
-    progress_[i] = '-'
-    print("\r{0}".format(progress_), end='')
+    bar.update()
     #미니배치 획득
     batch_mask = np.random.choice(train_size, batch_size)
     x = x_train[batch_mask]
@@ -46,7 +48,7 @@ for i in range(iters_num):
 
     if network.accuracy(x, t) >= 0.95:
         break
-
+bar.finish()
 x_list = list(range(0, iters_num))
 plt.plot(x_list, train_loss_list)
 plt.show()
