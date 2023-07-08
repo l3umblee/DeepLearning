@@ -1,4 +1,5 @@
 import numpy as np
+from DLB.DeepLearningLB import softmax, cross_entropy_error
 #곱셈 계층
 class MulLayer:
     def __init__(self):
@@ -130,4 +131,52 @@ class Affine:
         self.db = np.sum(dout, axis=0)
 
         dx = dx.reshape(*self.original_x_shape)
+        return dx
+
+#SoftmaxWithLoss (My ver.)
+class SoftmaxWithLoss_JY:
+    def __init__(self):
+        self.loss = None
+        self.S = None
+        self.Y = None
+
+    def forward(self, a, t):
+        self.a = a
+        self.t = t
+        #Softmax
+        if a.ndim == 1:
+            self.Y = softmax(a)
+        else:
+            c = np.max(self.a, axis=1)
+            self.a = np.exp(self.a - c)
+            self.S = np.sum(self.a, axis=1) #Sum 행렬 -> 1행당 데이터 1개에 대한 예측값을 모두 더함. 열은 당연히 1개
+            self.Y = self.a / self.S
+        
+        #cross_entropy_error
+        L = cross_entropy_error(self.Y, t)
+
+        return L
+
+    def backward(self):
+        out = self.Y - self.t
+
+        return out
+
+#SoftmaxWithLoss (Standard Ver.)
+class SoftmaxWithLoss:
+    def __init__(self):
+        self.loss = None
+        self.y = None
+        self.t = None
+    
+    def forward(self, x, t):
+        self.t = t
+        self.y = softmax(x)
+        self.loss = cross_entropy_error(self.y, self.t)
+        return self.loss
+    
+    def backward(self, dout=1):
+        batch_size = self.t.shape[0]
+        dx = (self.y - self.t) / batch_size
+        #전파하는 값을 배치의 수로 나눠 데이터 1개당 오차를 앞 계층으로 전파
         return dx
