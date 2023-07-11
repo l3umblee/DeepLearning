@@ -112,8 +112,10 @@ class Affine:
     def __init__(self, W, b):
         self.W = W
         self.b = b
+
         self.x = None
         self.original_x_shape = None
+
         self.dW = None
         self.db = None
 
@@ -177,6 +179,11 @@ class SoftmaxWithLoss:
     
     def backward(self, dout=1):
         batch_size = self.t.shape[0]
-        dx = (self.y - self.t) / batch_size
+        if self.t.size == self.y.size: #정답 레이블이 원-핫 인코딩일 경우
+            dx = (self.y - self.t) / batch_size
+        else: #정답레이블이 원-핫 인코딩이 아니라면 (여기서 원-핫 인코딩으로 바꿔준다고 생각)
+            dx = self.y.copy()
+            dx[np.arange(batch_size), self.t] -= 1 #정답에 해당하는 요소들은 모두 1로 바꿔줌.
+            dx = dx / batch_size
         #전파하는 값을 배치의 수로 나눠 데이터 1개당 오차를 앞 계층으로 전파
         return dx
