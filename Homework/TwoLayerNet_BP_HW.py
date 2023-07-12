@@ -29,8 +29,8 @@ class TwoLayerNet_BP:
     #x의 값은 데이터 N개에 대한 입력.
     def predict(self, x): 
         out = x
-        for i in self.Layers.values():
-            out = i.forward(out)
+        for l in self.Layers.values():
+            out = l.forward(out)
 
         return out   
 

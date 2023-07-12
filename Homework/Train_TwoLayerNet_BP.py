@@ -9,7 +9,7 @@ from TwoLayerNet_BP_HW import TwoLayerNet_BP
 (x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, one_hot_label=True)
 network = TwoLayerNet_BP(input_size=784, hidden_size=50, output_size=10)
 
-iters_num = 100000
+iters_num = 10000
 train_size = x_train.shape[0]
 batch_size = 100
 learning_rate = 0.1
@@ -43,9 +43,11 @@ for i in range(iters_num):
         test_acc = network.accuracy(x_test, t_test)
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
+        print("train acc, test acc | " + str(train_acc) + ", " + str(test_acc))
 
 bar.finish()    
-x_list = list(range(0, len(test_acc_list)))
-plt.plot(x_list, test_acc_list)
-plt.plot(x_list, train_acc_list)
+x_list = range(len(test_acc_list))
+plt.plot(x_list, test_acc_list, label="test_acc")
+plt.plot(x_list, train_acc_list, label='train_acc')
+plt.ylim(0, 1.0)
 plt.show()
