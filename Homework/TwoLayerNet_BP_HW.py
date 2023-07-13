@@ -1,7 +1,6 @@
 import sys, os
 sys.path.append(os.pardir)
 import numpy as np
-import pickle
 from DLB.DeepLearningLB import _numerical_gradient
 from DLB.BackPropagationLayer import SoftmaxWithLoss, Affine, Relu
 from collections import OrderedDict
@@ -13,6 +12,7 @@ predict, loss, accuracy, numerical_gradient, gradient
 '''
 class TwoLayerNet_BP:
     def __init__(self, input_size, hidden_size, output_size, weight_init_std=0.01):
+        np.random.seed(23)
         self.params = {}
         self.params['W1'] = weight_init_std*np.random.randn(input_size, hidden_size)
         self.params['b1'] = np.zeros(hidden_size)
@@ -20,25 +20,23 @@ class TwoLayerNet_BP:
         self.params['b2'] = np.zeros(output_size)
         
         self.Layers = OrderedDict()
-        self.Layers['z1'] = Affine(self.params['W1'], self.params['b1'])
-        self.Layers['R'] = Relu()
-        self.Layers['z2'] = Affine(self.params['W2'], self.params['b2'])
+        self.Layers['Affine1'] = Affine(self.params['W1'], self.params['b1'])
+        self.Layers['Relu1'] = Relu()
+        self.Layers['Affine2'] = Affine(self.params['W2'], self.params['b2'])
         
         self.OutputLayer = SoftmaxWithLoss()
 
     #x의 값은 데이터 N개에 대한 입력.
     def predict(self, x): 
-        out = x
         for l in self.Layers.values():
-            out = l.forward(out)
+            x = l.forward(x)
 
-        return out   
+        return x
 
     def loss(self, x, t):
         y = self.predict(x)
 
-        loss = self.OutputLayer.forward(y, t)
-        return loss
+        return self.OutputLayer.forward(y, t)
 
     def accuracy(self, x, t):
         y = self.predict(x)
@@ -71,9 +69,9 @@ class TwoLayerNet_BP:
             dout = layer.backward(dout)
 
         grad = {}
-        grad['W1'] = self.Layers['z1'].dW
-        grad['b1'] = self.Layers['z1'].db
-        grad['W2'] = self.Layers['z2'].dW
-        grad['b2'] = self.Layers['z2'].db
+        grad['W1'] = self.Layers['Affine1'].dW
+        grad['b1'] = self.Layers['Affine1'].db
+        grad['W2'] = self.Layers['Affine2'].dW
+        grad['b2'] = self.Layers['Affine2'].db
 
         return grad

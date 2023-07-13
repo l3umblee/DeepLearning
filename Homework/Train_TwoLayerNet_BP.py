@@ -33,20 +33,20 @@ for i in range(iters_num):
 
     #갱신
     for key in ('W1', 'b1', 'W2', 'b2'):
-        network.params[key] -= learning_rate*g[key]
+        network.params[key] -= learning_rate * g[key]
 
     loss = network.loss(x, t)
     train_loss_list.append(loss)
 
     if i % iter_per_epoch == 0:
-        train_acc = network.accuracy(x, t)
+        train_acc = network.accuracy(x_train, t_train)
         test_acc = network.accuracy(x_test, t_test)
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
         print("train acc, test acc | " + str(train_acc) + ", " + str(test_acc))
 
 bar.finish()    
-x_list = range(len(test_acc_list))
+x_list = np.arange(len(train_acc_list))
 plt.plot(x_list, test_acc_list, label="test_acc")
 plt.plot(x_list, train_acc_list, label='train_acc')
 plt.ylim(0, 1.0)

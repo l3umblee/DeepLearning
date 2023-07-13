@@ -57,14 +57,28 @@ yk = exp(ak) / sum(exp(ai)) = C*exp(ak) / C*(sum(exp(ai)))
 (C' = logC)
 
 -> 입력값에 어떤 수를 더하거나 빼도 결과는 같다.
+
+(0713)-> 기존 코드 수정
+x의 차원이 2차원일 경우 
 '''
-def softmax(a):
+def softmax(x):
+    if x.ndim == 2:
+        x = x.T
+        x = x - np.max(x, axis=0)
+        y = np.exp(x) / np.sum(np.exp(x), axis=0)
+        return y.T
+    
+    x = x - np.max(x)
+    return np.exp(x) / np.sum(np.exp(x))
+    '''
+    #RuntimeWarning 발생
     c = np.max(a)
     exp_a = np.exp(a - c)
     sum_exp_a = np.sum(exp_a)
     y = exp_a / sum_exp_a
 
-    return y
+    return y    
+    '''
 
 #평균 제곱 오차 (손실함수) -> t에 해당하는 값은 one-hot-encoding된 데이터
 def mean_squared_error(y, t):
@@ -157,7 +171,7 @@ def _numerical_gradient(f, x):
         x[idx] = float(x[idx]) + h
         fxh1 = f(x)
 
-        x[idx] = float(x[idx]) - h
+        x[idx] = tmp_val - h
         fxh2 = f(x)
 
         grad[idx] = (fxh1 - fxh2) / (2*h)
