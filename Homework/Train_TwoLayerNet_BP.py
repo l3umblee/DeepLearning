@@ -2,7 +2,6 @@ import sys, os
 sys.path.append(os.pardir)
 import numpy as np
 import matplotlib.pyplot as plt
-import progressbar
 from dataset.mnist import load_mnist
 from TwoLayerNet_BP_HW import TwoLayerNet_BP
 
@@ -20,10 +19,7 @@ test_acc_list = []
 
 iter_per_epoch = max(train_size/batch_size, 1)
 
-bar = progressbar.ProgressBar(maxval=iters_num).start()
-
 for i in range(iters_num):
-    bar.update()
     batch_mask = np.random.choice(train_size, batch_size)
     x = x_train[batch_mask]
     t = t_train[batch_mask]
@@ -45,7 +41,6 @@ for i in range(iters_num):
         test_acc_list.append(test_acc)
         print("train acc, test acc | " + str(train_acc) + ", " + str(test_acc))
 
-bar.finish()    
 x_list = np.arange(len(train_acc_list))
 plt.plot(x_list, test_acc_list, label="test_acc")
 plt.plot(x_list, train_acc_list, label='train_acc')
