@@ -1,3 +1,5 @@
+import numpy as np
+from collections import OrderedDict
 #MultiLayerNet : 완전 연결 다층 신경망
 '''
 구현해야 할 것
@@ -21,3 +23,39 @@ accuracy(x, t) : 정확도 계산
 numerical_gradient(x, t) : 수치 미분을 이용한 기울기 반환
 gradient(x, t) : 오차역전파법을 이용한 기울기 반환
 '''
+class MultiLayerNet:
+    def __init__(self, input_size, hidden_size_list, output_size,
+                 activation='relu', weight_init_std='relu', weight_decay_lambda=0):
+        self.input_size = input_size
+        self.hidden_size_list = hidden_size_list
+        self.hidden_size_list_num = len(hidden_size_list)
+        self.output_size = output_size
+        self.activation = activation
+        self.weight_init_std = weight_init_std
+        self.weight_decay_lambda = weight_decay_lambda
+
+        self.layers = OrderedDict()
+        for i in range(1, self.hidden_size_list_num):
+            pass
+        pass
+        
+    def init_weight(self, weight_init_std):
+        pass
+    
+    def predict(self, x):
+        for key in self.layers.keys():
+            x = self.layers[key].forward(x)
+        
+        return x
+
+    def loss(self, x, t):
+        pass
+
+    def accuracy(self, x, t):
+        pass
+
+    def numerical_gradient(self, x, t):
+        pass
+
+    def gradient(self, x, t):
+        pass
