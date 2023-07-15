@@ -1,5 +1,7 @@
 import numpy as np
 from collections import OrderedDict
+from DLB.BackPropagationLayer import Affine, SoftmaxWithLoss
+from DLB.DeepLearningLB import relu, sigmoid
 #MultiLayerNet : 완전 연결 다층 신경망
 '''
 구현해야 할 것
@@ -35,7 +37,19 @@ class MultiLayerNet:
         self.weight_decay_lambda = weight_decay_lambda
 
         self.layers = OrderedDict()
+        alpha = self.input_size
         for i in range(1, self.hidden_size_list_num):
+            W = np.random.randn(alpha, self.hidden_size_list[i - 1])
+            if weight_init_std == 'relu' or weight_init_std == 'he': #he 초깃값
+                W *= np.sqrt(2.0 / self.hidden_size_list[i - 1])
+            elif weight_init_std == 'sigmoid' or weight_init_std == 'xavier': #xavier 초깃값
+                W *= np.sqrt(1.0 / self.hidden_size_list[i - 1])
+            else: #그냥 숫자일 경우
+                W *= self.weight_init_std
+            b = np.zeros_like(self.hidden_size_list[i - 1])
+
+            self.layers['Affine' + str(i)] = Affine(W, b) #Affine의 매개변수는 W, b
+            
             pass
         pass
         
