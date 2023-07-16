@@ -32,21 +32,20 @@ class MultiLayerNet:
         self.hidden_size_list = hidden_size_list
         self.hidden_size_list_num = len(hidden_size_list)
         self.output_size = output_size
-        self.activation = activation
         self.weight_init_std = weight_init_std
-        self.weight_decay_lambda = weight_decay_lambda
+        self.weight_decay_lambda = weight_decay_lambda #오버피팅 억제를 위한 가중치 감소
         self.params = {}
 
         self.init_weight(weight_init_std)
         activation_layer = {'relu' : Relu(), 'sigmoid' : Sigmoid()}
         self.layers = OrderedDict()
-        for i in range(1, self.hidden_size_list_num):
+        for i in range(1, self.hidden_size_list_num+1):
             self.layers['Affine' + str(i)] = Affine(self.params['W'+str(i)],
                                                      self.params['b'+str(i)]) #Affine의 매개변수는 W, b
             self.layers['Activation Func' + str(i)] = activation_layer[activation]
         
         #SoftmaxwithLoss를 위하여 마지막 층은 for문과 따로 정의
-        idx = self.hidden_size_list_num
+        idx = self.hidden_size_list_num+1
         self.layers['Affine' + str(idx)] = Affine(self.params['W' + str(idx)], 
                                                   self.params['b' + str(idx)])
         #self.layers에는 마지막의 내적 층 까지만 저장, SoftmaxWithLoss를 위한 last_layer는 별개이므로 주의
@@ -76,15 +75,24 @@ class MultiLayerNet:
     #손실함수 계산
     def loss(self, x, t):
         y = self.predict(x)
-
-        return self.last_layer(y, t)
+        
+        weight_decay = 0
+        for idx in range(1, self.hidden_size_list_num + 2):
+            W = self.params['W' + str(idx)]
+            weight_decay += 0.5 * self.weight_decay_lambda * np.sum(W**2) 
+            #"가중치 감소는 모든 가중치 각각의 손실함수에 1/2 * 람다 * W^2를 더합니다."
+        return self.last_layer(y, t) + weight_decay
 
     def accuracy(self, x, t):
-        pass
+        y = self.predict(x)
+        y = np.argmax(y, axis=1)
+        if t.ndim != 1 : t = np.argmax(t, axis=1)
+
+        accuracy = np.sum(y == t) / float(x.shape[0])
+        return accuracy
 
     #수치 미분은 필요시 구현...
     def numerical_gradient(self, x, t):
-        
         pass
 
     #오차 역전파법을 이용한 기울기
@@ -94,11 +102,14 @@ class MultiLayerNet:
         dout = 1
         dout = self.last_layer.backward(dout)
 
-        layers = self.layers.values()
+        layers = list(self.layers.values())
         layers.reverse()
         for layer in layers:
             dout = layer.backward(dout)
         
-        grad = {}
+        grads = {}
         for i in range(1, self.hidden_size_list_num+2):
-            pass
+            grads['W'+str(i)] = self.layers['Affine'+str(i)].dW
+            grads['b'+str(i)] = self.layers['Affine'+str(i)].db
+        
+        return grads
