@@ -1,7 +1,6 @@
 import numpy as np
 from collections import OrderedDict
-from DLB.BackPropagationLayer import Affine, SoftmaxWithLoss
-from DLB.DeepLearningLB import relu, sigmoid
+from DLB.BackPropagationLayer import Affine, SoftmaxWithLoss, Relu, Sigmoid
 #MultiLayerNet : 완전 연결 다층 신경망
 '''
 구현해야 할 것
@@ -26,6 +25,7 @@ numerical_gradient(x, t) : 수치 미분을 이용한 기울기 반환
 gradient(x, t) : 오차역전파법을 이용한 기울기 반환
 '''
 class MultiLayerNet:
+    #생성자 정의
     def __init__(self, input_size, hidden_size_list, output_size,
                  activation='relu', weight_init_std='relu', weight_decay_lambda=0):
         self.input_size = input_size
@@ -35,41 +35,70 @@ class MultiLayerNet:
         self.activation = activation
         self.weight_init_std = weight_init_std
         self.weight_decay_lambda = weight_decay_lambda
+        self.params = {}
 
+        self.init_weight(weight_init_std)
+        activation_layer = {'relu' : Relu(), 'sigmoid' : Sigmoid()}
         self.layers = OrderedDict()
-        alpha = self.input_size
         for i in range(1, self.hidden_size_list_num):
-            W = np.random.randn(alpha, self.hidden_size_list[i - 1])
-            if weight_init_std == 'relu' or weight_init_std == 'he': #he 초깃값
-                W *= np.sqrt(2.0 / self.hidden_size_list[i - 1])
-            elif weight_init_std == 'sigmoid' or weight_init_std == 'xavier': #xavier 초깃값
-                W *= np.sqrt(1.0 / self.hidden_size_list[i - 1])
-            else: #그냥 숫자일 경우
-                W *= self.weight_init_std
-            b = np.zeros_like(self.hidden_size_list[i - 1])
-
-            self.layers['Affine' + str(i)] = Affine(W, b) #Affine의 매개변수는 W, b
-            
-            pass
-        pass
+            self.layers['Affine' + str(i)] = Affine(self.params['W'+str(i)],
+                                                     self.params['b'+str(i)]) #Affine의 매개변수는 W, b
+            self.layers['Activation Func' + str(i)] = activation_layer[activation]
         
-    def init_weight(self, weight_init_std):
-        pass
+        #SoftmaxwithLoss를 위하여 마지막 층은 for문과 따로 정의
+        idx = self.hidden_size_list_num
+        self.layers['Affine' + str(idx)] = Affine(self.params['W' + str(idx)], 
+                                                  self.params['b' + str(idx)])
+        #self.layers에는 마지막의 내적 층 까지만 저장, SoftmaxWithLoss를 위한 last_layer는 별개이므로 주의
+        self.last_layer = SoftmaxWithLoss()
     
+    #가중치 초기화
+    def init_weight(self, weight_init_std):
+        all_size_list = [self.input_size] + self.hidden_size_list + [self.output_size]
+        for i in range(1, len(all_size_list)):
+            self.params['W' + str(i)] = np.random.randn(all_size_list[i-1], all_size_list[i]) #W1은 input_size x hidden_size1, W마지막은 hidden_size마지막 x output_size
+            if weight_init_std == 'relu' or weight_init_std == 'he':
+                self.params['W' + str(i)] *= np.sqrt(2.0 / all_size_list[i])
+            elif weight_init_std == 'sigmoid' or weight_init_std == 'xavier':
+                self.params['W' + str(i)] *= np.sqrt(1.0 / all_size_list[i])
+            else:
+                self.params['W' + str(i)] *= self.weight_init_std
+            
+            self.params['b' + str(i)] = np.zeros_like(all_size_list[i])
+    
+    #예측값 계산
     def predict(self, x):
-        for key in self.layers.keys():
-            x = self.layers[key].forward(x)
+        for layer in self.layers.values():
+            x = layer.forward(x)
         
         return x
 
+    #손실함수 계산
     def loss(self, x, t):
-        pass
+        y = self.predict(x)
+
+        return self.last_layer(y, t)
 
     def accuracy(self, x, t):
         pass
 
+    #수치 미분은 필요시 구현...
     def numerical_gradient(self, x, t):
+        
         pass
 
+    #오차 역전파법을 이용한 기울기
     def gradient(self, x, t):
-        pass
+        self.loss(x, t) #forward를 통해 오차역전파를 위한 모든 값 세팅
+
+        dout = 1
+        dout = self.last_layer.backward(dout)
+
+        layers = self.layers.values()
+        layers.reverse()
+        for layer in layers:
+            dout = layer.backward(dout)
+        
+        grad = {}
+        for i in range(1, self.hidden_size_list_num+2):
+            pass
