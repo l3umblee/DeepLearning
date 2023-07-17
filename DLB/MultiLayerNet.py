@@ -1,5 +1,6 @@
 import numpy as np
 from collections import OrderedDict
+from DLB.DeepLearningLB import _numerical_gradient
 from DLB.BackPropagationLayer import Affine, SoftmaxWithLoss, Relu, Sigmoid
 #MultiLayerNet : 완전 연결 다층 신경망
 '''
@@ -93,7 +94,14 @@ class MultiLayerNet:
 
     #수치 미분은 필요시 구현...
     def numerical_gradient(self, x, t):
-        pass
+        loss_W = lambda W : self.loss(x, t)
+
+        grads = {}
+        for i in range(1, self.hidden_size_list_num+2):
+            grads['W'+str(i)] = _numerical_gradient(loss_W, self.params['W'+str(i)])
+            grads['b'+str(i)] = _numerical_gradient(loss_W, self.params['b'+str(i)])
+        
+        return grads
 
     #오차 역전파법을 이용한 기울기
     def gradient(self, x, t):
