@@ -2,10 +2,10 @@ import sys, os
 sys.path.append(os.pardir)  # 부모 디렉터리의 파일을 가져올 수 있도록 설정
 import numpy as np
 from DLB.Optimizer import *
-#일단 책에 있는 내용을 그대로 인용
 class Trainer:
     """신경망 훈련을 대신 해주는 클래스
     """
+    # verbose라는 매개변수는 함수의 진행과정을 상세히 출력할 것인지를 선택할 수 있는 옵션
     def __init__(self, network, x_train, t_train, x_test, t_test,
                  epochs=20, mini_batch_size=100,
                  optimizer='SGD', optimizer_param={'lr':0.01}, 

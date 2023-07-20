@@ -4,6 +4,9 @@ def smooth_curve(x):
     """손실 함수의 그래프를 매끄럽게 하기 위해 사용
     
     참고：http://glowingpython.blogspot.jp/2012/02/convolution-with-numpy.html
+    
+    kaiser window를 이용
+    -> 입력값 x와 kaiser window를 covolution 시킨 것 (kaiser window의 자세한 형태는 위키피디아 참조)
     """
     window_len = 11
     s = np.r_[x[window_len-1:0:-1], x, x[-1:-window_len:-1]]

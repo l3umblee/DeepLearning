@@ -16,6 +16,7 @@ x_train, t_train =  shuffle_dataset(x_train, t_train)
 validation_rate = 0.20
 validation_num = int(x_train.shape[0]*validation_rate)
 
+#훈련 데이터와 검증 데이터를 나눔 -> 이전에도 배웠듯이 검증 데이터는 오버 피팅을 막기 위한 수단
 x_val = x_train[:validation_num]
 t_val = t_train[:validation_num]
 x_train = x_train[validation_num:]
@@ -40,10 +41,12 @@ results_train = {}
 for _ in range(optimization_trial):
     # 탐색한 하이퍼파라미터의 범위 지정===============
     weight_decay = 10 ** np.random.uniform(-8, -4)
+    #uniform은 numpy에서 제공하는 균등 분포 함수 (최소 -8 ~ 최대 -4 중에서 한가지를 뽑음 -> 이는 가중치 감소의 값이 될 것임.)
     lr = 10 ** np.random.uniform(-6, -2)
+    #learing rate, 학습률 또한 무작위로 선정
     # ================================================
 
-    val_acc_list, train_acc_list = __train(lr, weight_decay)
+    val_acc_list, train_acc_list = __train(lr, weight_decay) #선정한 파라미터들을 이용해서 훈련 시킴
     print("val acc:" + str(val_acc_list[-1]) + " | lr:" + str(lr) + ", weight decay:" + str(weight_decay))
     key = "lr:" + str(lr) + ", weight decay:" + str(weight_decay)
     results_val[key] = val_acc_list
@@ -73,4 +76,3 @@ for key, val_acc_list in sorted(results_val.items(), key=lambda x:x[1][-1], reve
         break
 
 plt.show()
-

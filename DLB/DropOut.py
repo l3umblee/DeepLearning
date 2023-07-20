@@ -1,6 +1,7 @@
 import numpy as np
 class Dropout:
     def __init__(self, dropout_ratio=0.5):
+        #일반적인 경우 dropout_ratio는 0.5로 지정
         self.dropout_ratio = dropout_ratio
         self.mask = None
 
@@ -13,5 +14,5 @@ class Dropout:
             return x * (1.0 - self.dropout_ratio)
 
     def backward(self, dout):
-        #역전파 시에는 순전파 때 통과시킨 건 통과시키고, 통과시키지 않은 것은 차단
+        #역전파 시에는 순전파 때 통과시킨 건 통과시키고, 통과시키지 않은 것은 차단 -> 순전파의 과정을 그대로 반영
         return dout * self.mask

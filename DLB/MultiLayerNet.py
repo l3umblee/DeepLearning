@@ -82,7 +82,7 @@ class MultiLayerNet:
             W = self.params['W' + str(idx)]
             weight_decay += 0.5 * self.weight_decay_lambda * np.sum(W**2) 
             #"가중치 감소는 모든 가중치 각각의 손실함수에 1/2 * 람다 * W^2를 더합니다."
-        return self.last_layer(y, t) + weight_decay
+        return self.last_layer.forward(y, t) + weight_decay
 
     def accuracy(self, x, t):
         y = self.predict(x)
@@ -92,7 +92,7 @@ class MultiLayerNet:
         accuracy = np.sum(y == t) / float(x.shape[0])
         return accuracy
 
-    #수치 미분은 필요시 구현...
+    #수치 미분
     def numerical_gradient(self, x, t):
         loss_W = lambda W : self.loss(x, t)
 
@@ -117,7 +117,8 @@ class MultiLayerNet:
         
         grads = {}
         for i in range(1, self.hidden_size_list_num+2):
-            grads['W'+str(i)] = self.layers['Affine'+str(i)].dW
+            #가중치 감소 적용
+            grads['W'+str(i)] = self.layers['Affine'+str(i)].dW + self.weight_decay_lambda * self.layers['Affine' + str(i)].W
             grads['b'+str(i)] = self.layers['Affine'+str(i)].db
         
         return grads

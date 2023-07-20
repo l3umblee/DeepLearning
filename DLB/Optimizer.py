@@ -7,7 +7,8 @@ class SGD:
     
     def update(self, params, grads):
         for key in params.keys():
-            params[key] -= self.lr * grads[key]
+            #numpy에러 : UFuncOutputCastingError 해결을 위해 이렇게 표현
+            params[key] = params[key] - self.lr * grads[key]
 
 #모멘텀 (Momentum)
 class Momentum:
