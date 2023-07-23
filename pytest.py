@@ -1,9 +1,12 @@
+import sys, os
+sys.path.append(os.pardir)
 import numpy as np
+from DLB.util import im2col_JY
 
-x = np.array([[[1, 2, 3], [4, 5, 6], [7, 8, 9]], [[1, 2, 3], [4, 5, 6], [7, 8, 9]]])
-x1 = np.array([[[11, 12, 13], [14, 15, 16], [17, 18, 19]], [[11, 12, 13], [14, 15, 16], [17, 18, 19]]])
-x_final = np.array([x, x1])
-print(x_final)
-print(x_final.shape)
-print(x_final[0][:1, :2, :2]) #4차원 배열 형태를 다루는 법
-x_final = x_final.flatten()
+x1 = np.random.rand(1, 3, 7, 7)
+col1 = im2col_JY(x1, 5, 5, stride=1, pad=0)
+print(col1.shape)
+
+x2 = np.random.rand(10, 3, 7, 7)
+col2 = im2col_JY(x2, 5, 5, stride=1, pad=0)
+print(col2.shape)
