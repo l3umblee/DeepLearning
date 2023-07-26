@@ -3,6 +3,14 @@ from DLB.util import im2col_JY
 #합성곱 계층 구현
 '''
 backward의 경우 affine 계층과 흡사하지만, im2col이 아닌 col2im을 사용해야하므로 col2im 구현 요망
+
+forward 중, N차원 텐서의 전치 관련
+- 다차원 텐서의 전치는 numpy.transpose함수로 처리할 수 있음.
+- 먼저 나온 결과 out을 일단, out.reshape(N, oh, ow, -1)로 reshape 해주는데, 이는 channel last 포맷이다.
+  (channel  last 포맷 : NHWC는 픽셀단위로 채널의 값이 연속적으로 저장됨.
+  tensor 연산은 효율적인 연산을 위해 병렬적으로 수행되는데, 채널 단위로 벡터화하여 연산이 수행되기 때문에 NHWC로 메모리에 저장하는 것이 메모리 엑세스 관점에서 효율적)
+  -> 쉽게 말하면 NCHW 포맷은 채널별로 나뉘어져 있으니까 비효율적으로 값을 읽어와야 하지만, NHWC는 그렇지 않음
+
 '''
 class Convolution:
     def __init__(self, W, b, stride=1, pad=0):
@@ -24,6 +32,8 @@ class Convolution:
 
         out = out.reshape(N, oh, ow, -1).transpose(0, 3, 1, 2) #N개의 데이터
         return out
-    
+    #col2im 필요
     def backward(self, dout):
-        pass
+        dx = np.dot(dout, self.W.T)
+        self.dw = np.dot(self.x.T, dout)
+        self.db = np.sum(dout, axis=0)

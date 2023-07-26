@@ -48,7 +48,7 @@ stride - 스트라이드
 pad - 패딩 (두께)
 '''
 
-#내가 구현한 버전
+#내가 구현한 버전 -> 패딩이 고려가 안됨
 def im2col_JY(input_data, filter_h, filter_w, stride=1, pad=0):
     N, C, H, W = input_data.shape
 
@@ -67,3 +67,24 @@ def im2col_JY(input_data, filter_h, filter_w, stride=1, pad=0):
             cnt += 1
 
     return out
+
+#col2im : im2col의 반대 버전
+'''
+주된 사용은 convolution의 backward (오차역전파법)을 위함
+
+parameters
+-----------
+col : 2차원 배열 (입력 데이터)
+input_shape : 원래 이미지 데이터의 형상
+filter_h : 필터의 높이
+filter_w : 필터의 너비
+stride: 스트라이드
+pad : 패딩
+'''
+def col2im_JY(col, input_shape, filter_h, filter_w, stride=1, pad=0):
+    N, C, H, W = input_shape
+    oh = (H + 2*pad - filter_h) // stride + 1
+    ow = (W + 2*pad - filter_w) // stride + 1
+    col = col.reshape(N, oh, ow, C, filter_h, filter_w).transpose(0, 3, 4, 5, 1, 2)
+    #이렇게 형변환을 하는 이유는 input_data (im2col을 통과한 버전)의 가로와 세로를 결정지었던, 모든 요소대로 분해한 것!
+    #세로 : N x oh x ow / 가로 : C x filter_h x filter_w
