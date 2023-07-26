@@ -47,8 +47,24 @@ filter_w - 필터의 너비
 stride - 스트라이드
 pad - 패딩 (두께)
 '''
+def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
+    N, C, H, W = input_data.shape
+    oh = (H + 2*pad - filter_h) // stride + 1
+    ow = (W + 2*pad - filter_w) // stride + 1
 
-#내가 구현한 버전 -> 패딩이 고려가 안됨
+    img = np.pad(input_data, [(0, 0), (0, 0), (pad, pad), (pad, pad)], 'constant')
+    col = np.zeros(N, C, filter_h, filter_w, oh, ow) #6차원 사용
+
+    for y in range(filter_h):
+        ymax = y + stride*oh
+        for x in range(filter_w):
+            xmax = x + stride*ow
+            col[:,:,y,x,:,:] = img[:,:,y:ymax:stride, x:xmax:stride]
+
+    col = col.transpose(0, 4, 5, 1, 2, 3).reshape(N*oh*ow, -1)
+    return col
+
+#내가 구현한 버전 -> 패딩 추가
 def im2col_JY(input_data, filter_h, filter_w, stride=1, pad=0):
     N, C, H, W = input_data.shape
 
@@ -57,13 +73,14 @@ def im2col_JY(input_data, filter_h, filter_w, stride=1, pad=0):
     ow = (W + 2*pad - filter_w) // stride + 1 #출력 크기의 너비
     #oh와 ow는 최종적으로 output 데이터의 가로와 세로의 크기를 나타내기도 하지만, 그렇다는 것은 필터가 '도장'을 가로로 몇번, 세로로 몇번 찍느냐도 나타냄
 
+    img = np.pad(input_data, [(0, 0), (0, 0), (pad, pad), (pad, pad)], 'constant')
     out = np.zeros((N*(oh*ow), filter_h*filter_w*C))
     cnt = 0
     for hidx in range(oh):
         ymax = filter_h + hidx #ymax : image 한장의 y축 (세로) 좌표를 표시
         for widx in range(ow):
             xmax = filter_w + widx #xmax : image 한장의 x축 (가로) 좌표를 표시
-            out[cnt:cnt+N] = input_data[:, :, hidx:ymax, widx:xmax].flatten().reshape(N, filter_h*filter_w*C)
+            out[cnt:cnt+N] = img[:, :, hidx:ymax, widx:xmax].flatten().reshape(N, filter_h*filter_w*C)
             cnt += 1
 
     return out
@@ -81,10 +98,19 @@ filter_w : 필터의 너비
 stride: 스트라이드
 pad : 패딩
 '''
-def col2im_JY(col, input_shape, filter_h, filter_w, stride=1, pad=0):
+def col2im(col, input_shape, filter_h, filter_w, stride=1, pad=0):
     N, C, H, W = input_shape
     oh = (H + 2*pad - filter_h) // stride + 1
     ow = (W + 2*pad - filter_w) // stride + 1
     col = col.reshape(N, oh, ow, C, filter_h, filter_w).transpose(0, 3, 4, 5, 1, 2)
     #이렇게 형변환을 하는 이유는 input_data (im2col을 통과한 버전)의 가로와 세로를 결정지었던, 모든 요소대로 분해한 것!
     #세로 : N x oh x ow / 가로 : C x filter_h x filter_w
+
+    img = np.zeros((N, C, H + 2*pad + stride - 1, W + 2*pad + stride - 1))
+
+    for y in range(filter_h):
+        ymax = y + stride*oh
+        for x in range(filter_w):
+            xmax = x + stride*ow
+            img[:,:,y:ymax:stride, x:xmax:stride] += col[:,:,y,x,:,:]
+    return img[:,:,pad:H + pad, pad:W + pad]
