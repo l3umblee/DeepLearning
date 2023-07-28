@@ -1,5 +1,5 @@
 import numpy as np
-from DLB.util import im2col_JY
+from DLB.util import im2col_JY, col2im
 #합성곱 계층 구현
 '''
 backward의 경우 affine 계층과 흡사하지만, im2col이 아닌 col2im을 사용해야하므로 col2im 구현 요망
@@ -26,14 +26,28 @@ class Convolution:
         oh = (H + 2*self.pad - FH) // self.stride + 1
         ow = (W + 2*self.pad - FW) // self.stride + 1
 
-        col = im2col_JY(x) #input 데이터 x를 im2col를 통해 2차원 형상으로 바꿈
+        col = im2col_JY(x, FH, FW) #input 데이터 x를 im2col를 통해 2차원 형상으로 바꿈
         c_filter = self.W.reshape(FN, -1).T #filter 또한 np.dot을 위해 2차원으로 변경, 두번째 인수가 -1인 이유는 다차원 배열의 원소 수가 변환 후에도 똑같이 유지되도록 묶어줌
         out = np.dot(col, c_filter) + self.b
 
         out = out.reshape(N, oh, ow, -1).transpose(0, 3, 1, 2) #N개의 데이터
+        
+        #오차 역전파 법을 위해 입력 데이터, 입력 데이터와 가중치를 affine 시킬 때의 버전을 저장해 둠.
+        self.x = x
+        self.col = col
+        self.c_filter = c_filter
+        
         return out
     #col2im 필요
     def backward(self, dout):
-        dx = np.dot(dout, self.W.T)
-        self.dw = np.dot(self.x.T, dout)
+        FN, C, FH, FW = self.W.shape
+        dout = dout.transpose(0, 2, 3, 1).reshape(-1, FN) #channel last format으로 바꾼 다음, 열이 FN이 되도록 형 변환
+
+        self.dW = np.dot(self.col.T, dout)
+        self.dW = self.dW.trasnpose(1, 0).reshape(FN, C, FH, FW)
         self.db = np.sum(dout, axis=0)
+
+        dcol = np.dot(dout, self.c_filter.T)
+        dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
+
+        return dx
