@@ -112,5 +112,5 @@ def col2im(col, input_shape, filter_h, filter_w, stride=1, pad=0):
         ymax = y + stride*oh
         for x in range(filter_w):
             xmax = x + stride*ow
-            img[:,:,y:ymax:stride, x:xmax:stride] += col[:,:,y,x,:,:]
+            img[:,:,y:ymax:stride, x:xmax:stride] += col[:,:,y,x,:,:] #im2col의 역순
     return img[:,:,pad:H + pad, pad:W + pad]
