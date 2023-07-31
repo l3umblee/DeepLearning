@@ -271,11 +271,11 @@ class Pooling:
 
         pool_size = self.pool_h*self.pool_w #pool_size는 일단, forward 상에서 im2col 바꿨을 당시의 열의 개수임. 즉 Pooling 계층을 통과했을 때 풀 1개에 대한 후보들의 개수
         dmax = np.zeros((dout.size, pool_size)) #dout의 사이즈는 원래의 데이터가 pool로 묶었을 때 총 몇 개 있었는지 나타냄 + 열을 pool_size로 둠으로써 forward 당시의 행렬을 영행렬로 구현
-        dmax[np.arange(self.arg_max.size), self.arg_max.flatten()]
+        dmax[np.arange(self.arg_max.size), self.arg_max.flatten()] = dout.flatten()
         #arg_max는 처음 forward의 input_data에서 구한 것, arg_max의 사이즈는 결국 원래 데이터에서 풀링한 것의 묶음 개수 / 평탄화한 다음은 dmax 상에서 원래 max 원소들이 있었던 곳을 열로 나타냄
         dmax = dmax.reshape(dout.shape + (pool_size,)) #차원을 dout.shape에서 pool_size만큼 늘림.
-
-        dcol = dmax.reshape(dmax.shape[0]*dmax.shape[1]*dmax.shape[2], -1)
+        #pool_size 만큼 차원을 늘려준 이유는 현재 dout은 forward 한 상태인데, 여기서 차원을 세로로 추가한다고 생각, 원본의 크기로 되돌리는 의미
+        dcol = dmax.reshape(dmax.shape[0]*dmax.shape[1]*dmax.shape[2], -1) #다시 한 행으로 만듦 (col2im을 위해)
         dx = col2im(dcol, self.x.shape, self.pool_h, self.pool_w, self.stride, self.pad)
-
+        #pooling에서 stride는 pooling window 크기와 같은 값으로 설정하는 것이 보통!
         return dx

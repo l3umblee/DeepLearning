@@ -9,3 +9,8 @@ print(arg_max)
 print(x)
 print(x.shape)
 print(x.shape + (4, ))
+
+arg_max = np.argmax(x, axis=1)
+y = np.zeros_like(x)
+y[np.arange(arg_max.size), arg_max.flatten()] = arg_max.flatten()
+print(y)

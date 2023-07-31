@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.pardir)
 import numpy as np
 from DLB.DeepLearningLB import _numerical_gradient
-from DLB.BackPropagationLayer import SoftmaxWithLoss, Affine, Relu
+from DLB.Layer import SoftmaxWithLoss, Affine, Relu
 from collections import OrderedDict
 
 #2층 신경망 구현 -> 오차 역전파법 이용, OrderDict 이용
