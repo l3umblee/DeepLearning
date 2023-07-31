@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.pardir)
 import numpy as np
-from DLB.DeepLearningLB import _numerical_gradient
+from DLB.deeplearningFunctions import _numerical_gradient
 from DLB.Layer import SoftmaxWithLoss, Affine, Relu
 from collections import OrderedDict
 

@@ -1,6 +1,6 @@
 import numpy as np
-from DLB.DeepLearningLB import softmax, cross_entropy_error
-from DLB.util import im2col_JY, im2col, col2im
+from DLB.deeplearningFunctions import *
+from DLB.util import *
 #곱셈 계층
 class MulLayer:
     def __init__(self):
@@ -189,6 +189,25 @@ class SoftmaxWithLoss:
         #전파하는 값을 배치의 수로 나눠 데이터 1개당 오차를 앞 계층으로 전파
         return dx
     
+#Dropout
+class Dropout:
+    def __init__(self, dropout_ratio=0.5):
+        #일반적인 경우 dropout_ratio는 0.5로 지정
+        self.dropout_ratio = dropout_ratio
+        self.mask = None
+
+    def forward(self, x, train_flg=True):
+        if train_flg:
+            #dropout_ratio보다 큰 원소만 True로 설정한 것 -> random에서 뽑아서 dropout_ratio보다 큰 확률의 위치만 True로 표시한 것
+            self.mask = np.random.rand(*x.shape) > self.dropout_ratio
+            return x * self.mask
+        else:
+            return x * (1.0 - self.dropout_ratio)
+
+    def backward(self, dout):
+        #역전파 시에는 순전파 때 통과시킨 건 통과시키고, 통과시키지 않은 것은 차단 -> 순전파의 과정을 그대로 반영
+        return dout * self.mask
+    
 #합성곱 계층 구현
 '''
 backward의 경우 affine 계층과 흡사하지만, im2col이 아닌 col2im을 사용해야하므로 col2im 구현 요망
@@ -208,14 +227,24 @@ class Convolution:
         self.stride = stride
         self.pad = pad #pad는 역시 padding의 두께를 의미
 
+        self.x = None
+        self.col = None
+        self.col_W = None
+
+        self.dW = None
+        self.db = None
+
     def forward(self, x): #x는 input 데이터, 필터는 self.W에 저장이 되어 있음
         FN, C, FH, FW = self.W.shape
         
         N, C, H, W = x.shape #N, C, H, W는 input 데이터의 shape를 따온 것인데, C는 어차피 필터의 것과 input의 데이터가 모두 같음
-        oh = (H + 2*self.pad - FH) // self.stride + 1
-        ow = (W + 2*self.pad - FW) // self.stride + 1
+        # oh = (H + 2*self.pad - FH) // self.stride + 1
+        # ow = (W + 2*self.pad - FW) // self.stride + 1
+        oh = 1 + int((H + 2*self.pad - FH) / self.stride)
+        ow = 1 + int((W + 2*self.pad - FW) / self.stride)
 
-        col = im2col_JY(x, FH, FW) #input 데이터 x를 im2col를 통해 2차원 형상으로 바꿈
+        #col = im2col_JY(x, FH, FW) #input 데이터 x를 im2col를 통해 2차원 형상으로 바꿈
+        col = im2col(x, FH, FW)
         c_filter = self.W.reshape(FN, -1).T #filter 또한 np.dot을 위해 2차원으로 변경, 두번째 인수가 -1인 이유는 다차원 배열의 원소 수가 변환 후에도 똑같이 유지되도록 묶어줌
         out = np.dot(col, c_filter) + self.b
 
@@ -224,19 +253,20 @@ class Convolution:
         #오차 역전파 법을 위해 입력 데이터, 입력 데이터와 가중치를 affine 시킬 때의 버전을 저장해 둠.
         self.x = x
         self.col = col
-        self.c_filter = c_filter
+        self.col_W = c_filter
         
         return out
+    
     #col2im 필요
     def backward(self, dout):
         FN, C, FH, FW = self.W.shape
         dout = dout.transpose(0, 2, 3, 1).reshape(-1, FN) #channel last format으로 바꾼 다음, 열이 FN이 되도록 형 변환
 
-        self.dW = np.dot(self.col.T, dout)
-        self.dW = self.dW.trasnpose(1, 0).reshape(FN, C, FH, FW)
         self.db = np.sum(dout, axis=0)
-
-        dcol = np.dot(dout, self.c_filter.T)
+        self.dW = np.dot(self.col.T, dout)
+        self.dW = self.dW.transpose(1, 0).reshape(FN, C, FH, FW)
+        
+        dcol = np.dot(dout, self.col_W.T)
         dx = col2im(dcol, self.x.shape, FH, FW, self.stride, self.pad)
 
         return dx
@@ -249,12 +279,16 @@ class Pooling:
         self.stride = stride
         self.pad = pad
 
+        self.x = None
+        self.arg_max = None
+
     def forward(self, x):
         N, C, H, W = x.shape
         oh = int(1 + (H - self.pool_h) / self.stride)
         ow = int(1 + (W - self.pool_w) / self.stride)
     
-        col = im2col_JY(x, self.pool_h, self.pool_w, self.stride, self.pad)
+        #col = im2col_JY(x, self.pool_h, self.pool_w, self.stride, self.pad)
+        col = im2col(x, self.pool_h, self.pool_w, self.stride, self.pad)
         col = col.reshape(-1, self.pool_h*self.pool_w)
 
         arg_max = np.argmax(col, axis=1)

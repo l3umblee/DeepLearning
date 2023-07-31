@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.pardir)
 import numpy as np
 import pickle
-from DLB.DeepLearningLB import softmax, sigmoid, cross_entropy_error, _numerical_gradient
+from DLB.deeplearningFunctions import softmax, sigmoid, cross_entropy_error, _numerical_gradient
 
 #2층 신경망 클래스 구현 -> 손글씨 인식을 위한 신경망
 '''

@@ -53,7 +53,7 @@ def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
     ow = (W + 2*pad - filter_w) // stride + 1
 
     img = np.pad(input_data, [(0, 0), (0, 0), (pad, pad), (pad, pad)], 'constant')
-    col = np.zeros(N, C, filter_h, filter_w, oh, ow) #6차원 사용
+    col = np.zeros((N, C, filter_h, filter_w, oh, ow)) #6차원 사용
 
     for y in range(filter_h):
         ymax = y + stride*oh
@@ -65,6 +65,7 @@ def im2col(input_data, filter_h, filter_w, stride=1, pad=0):
     return col
 
 #내가 구현한 버전 -> 패딩 추가
+#(07/31) 오류 발견, 사용 중지
 def im2col_JY(input_data, filter_h, filter_w, stride=1, pad=0):
     N, C, H, W = input_data.shape
 

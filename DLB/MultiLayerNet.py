@@ -1,7 +1,7 @@
 import numpy as np
 from collections import OrderedDict
-from DLB.DeepLearningLB import _numerical_gradient
-from DLB.BackPropagationLayer import Affine, SoftmaxWithLoss, Relu, Sigmoid
+from DLB.deeplearningFunctions import _numerical_gradient
+from DLB.Layer import *
 #MultiLayerNet : 완전 연결 다층 신경망
 '''
 구현해야 할 것
