@@ -47,7 +47,6 @@ A. 현재로서 드는 생각은 ReLU 계층을 통과시키면 그 부분은 0�
 class Relu:
     def __init__(self):
         self.mask = None
-    
     def forward(self, x):
         self.mask = (x <= 0)
         out = x.copy()
